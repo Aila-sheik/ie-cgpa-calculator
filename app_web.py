@@ -14,7 +14,7 @@ st.set_page_config(page_title="CGPA Calculator", layout="wide")
 # --- BOLD TITLES, GREEN FOCUS & GREEN BUTTONS CSS ---
 st.markdown("""
 <style>
-/* 1. Green Focus Border (Red mix illama) */
+/* 1. Green Focus Border */
 div[data-baseweb="input"]:focus-within, 
 div[data-baseweb="input"] > div:focus-within, 
 div[data-baseweb="select"]:focus-within, 
@@ -23,7 +23,7 @@ div[data-baseweb="select"] > div:focus-within {
     box-shadow: 0 0 4px #2ecc71 !important;
 }
 
-/* 2. Bold Titles (Neenga ketta maari) */
+/* 2. Bold Titles */
 .bold-title {
     font-weight: bold !important;
     font-size: 1.1rem;
@@ -115,7 +115,6 @@ def main():
                 
                 calc_total = 0.0
                 
-                # Column Headers for Expander
                 c_man, c_sub, c_cred = st.columns([0.7, 3, 1])
                 with c_man: st.markdown('<p class="bold-title">Type</p>', unsafe_allow_html=True)
                 with c_sub: st.markdown('<p class="bold-title">Subject</p>', unsafe_allow_html=True)
@@ -147,7 +146,7 @@ def main():
 
                 st.button("✅ Use this Total", type="primary", on_click=apply_calculated_credits, args=(calc_total,))
 
-            st.write("") # Spacer
+            st.write("") 
             if st.button("Save Semester (Direct)"):
                 st.session_state.semester_records.append({
                     'sem': sem_num, 'gpa': direct_gpa, 'total_credits': direct_credits
@@ -161,7 +160,6 @@ def main():
             st.markdown('<p class="bold-title">How many subjects?</p>', unsafe_allow_html=True)
             num_subjects = st.number_input("How many subjects?", min_value=1, max_value=12, value=5, label_visibility="collapsed")
             
-            # Column Headers for Subject-wise Entry
             c_man, c_sub, c_cred, c_grade = st.columns([0.7, 3, 1, 1])
             with c_man: st.markdown('<p class="bold-title">Type</p>', unsafe_allow_html=True)
             with c_sub: st.markdown('<p class="bold-title">Subject Title</p>', unsafe_allow_html=True)
@@ -194,7 +192,7 @@ def main():
                     if grade_point is not None:
                         subjects_data.append({'subject': sub, 'credit': cred, 'grade_point': grade_point})
 
-            st.write("") # Spacer
+            st.write("") 
             if st.button("Calculate & Save Semester"):
                 if subjects_data:
                     sem_gpa, sem_credits = calculate_semester_gpa(subjects_data)
@@ -218,21 +216,46 @@ def main():
             final_cgpa = calculate_cgpa(st.session_state.semester_records)
             st.metric(label="Current CGPA", value=f"{final_cgpa:.3f}")
             
-            if st.button("Generate PDF Report"):
-                filename = "reports/Web_CGPA_Report.pdf"
-                success = generate_pdf_report(st.session_state.semester_records, final_cgpa, filename)
-                
-                if success and os.path.exists(filename):
-                    with open(filename, "rb") as pdf_file:
-                        st.download_button(
-                            label="⬇️ Download PDF Now",
-                            data=pdf_file,
-                            file_name=f"My_CGPA_{final_cgpa:.2f}.pdf",
-                            mime="application/pdf"
-                        )
-                else:
-                    st.error("Failed to generate PDF. Check terminal for details.")
+            st.markdown("---")
             
+            # --- PUTHUSA ADD PANNAPATTA CODE INGE THELIVA IRUKKU ---
+            st.markdown("### 📝 Student Details for Report")
+            student_name = st.text_input("Enter Your Name:")
+            roll_number = st.text_input("Enter Your Roll Number:")
+            
+            # File save aagura idathoda path
+            pdf_filename = "reports/Web_CGPA_Report.pdf"
+            
+            if st.button("Generate PDF Report"):
+                # Rendu box-um empty-ah illama irukka nu theliva check pandrom
+                if student_name.strip() and roll_number.strip(): 
+                    
+                    # session_state la irunthu correct-a data pass pandrom
+                    success = generate_pdf_report(
+                        st.session_state.semester_records, 
+                        final_cgpa, 
+                        student_name, 
+                        roll_number,
+                        pdf_filename
+                    )
+                    
+                    if success and os.path.exists(pdf_filename):
+                        st.success("✅ PDF Generated Successfully!")
+                        
+                        # Download button
+                        with open(pdf_filename, "rb") as pdf_file:
+                            st.download_button(
+                                label="⬇️ Download PDF Now",
+                                data=pdf_file,
+                                file_name=f"{student_name}_CGPA_Report.pdf", # Pera veche download aagum
+                                mime="application/pdf"
+                            )
+                    else:
+                        st.error("Failed to generate PDF. Check terminal for details.")
+                else:
+                    st.warning("⚠️ Please enter both Name and Roll Number before generating the PDF.")
+            
+            st.write("")
             if st.button("Clear All Data"):
                 st.session_state.semester_records = []
                 st.rerun()
