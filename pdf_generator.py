@@ -1,7 +1,7 @@
 import os
 from fpdf import FPDF
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 def generate_pdf_report(semester_records, final_cgpa, student_name, roll_number, filename="reports/Web_CGPA_Report.pdf"):
     try:
@@ -44,7 +44,9 @@ def generate_pdf_report(semester_records, final_cgpa, student_name, roll_number,
         pdf.add_page()
         
         # Date and Time top right la
-        current_time = datetime.now().strftime("%d-%m-%Y %I:%M %p")
+        ist_timezone = timezone(timedelta(hours=5, minutes=30))
+        current_time = datetime.now(ist_timezone).strftime("%d-%m-%Y %I:%M %p") 
+
         pdf.set_font("Arial", 'I', 10)
         pdf.cell(0, 10, txt=f"Date & Time: {current_time}", ln=True, align='R')
         
